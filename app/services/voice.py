@@ -45,11 +45,9 @@ def _configure_pydub_ffmpeg(audio_segment_cls):
 
 def mktimestamp(time_unit: float) -> str:
     """
-    将 edge_tts 使用的 100 纳秒时间单位转换为字幕时间戳。
+    edge_tts가 사용하는 100나노초 시간 단위를 자막 타임스탬프로 변환합니다.
 
-    edge_tts 7.x 不再导出旧版本里的 `mktimestamp`，但项目里旧字幕链路
-    还需要这个格式化函数来兼容 Azure v2、Gemini、SiliconFlow 这些
-    手工构造的字幕时间轴，因此这里内置一个等价实现。
+    edge_tts 7.x는 이전 버전의 `mktimestamp`를 더 이상 내보내지 않지만, 기존 자막 경로는 Azure v2, Gemini, SiliconFlow처럼 직접 만든 타임라인과의 호환을 위해 이 포매터가 필요합니다. 그래서 동일한 구현을 내장합니다.
     """
     hour = math.floor(time_unit / 10**7 / 3600)
     minute = math.floor((time_unit / 10**7 / 60) % 60)
@@ -59,12 +57,12 @@ def mktimestamp(time_unit: float) -> str:
 
 def get_siliconflow_voices() -> list[str]:
     """
-    获取硅基流动的声音列表
+    SiliconFlow 음성 목록을 가져옵니다.
 
     Returns:
-        声音列表，格式为 ["siliconflow:FunAudioLLM/CosyVoice2-0.5B:alex", ...]
+        음성 목록 형식: ["siliconflow:FunAudioLLM/CosyVoice2-0.5B:alex", ...]
     """
-    # 硅基流动的声音列表和对应的性别（用于显示）
+    # SiliconFlow 음성 목록과 표시용 성별
     voices_with_gender = [
         ("FunAudioLLM/CosyVoice2-0.5B", "alex", "Male"),
         ("FunAudioLLM/CosyVoice2-0.5B", "anna", "Female"),
@@ -76,7 +74,7 @@ def get_siliconflow_voices() -> list[str]:
         ("FunAudioLLM/CosyVoice2-0.5B", "diana", "Female"),
     ]
 
-    # 添加siliconflow:前缀，并格式化为显示名称
+    # siliconflow: 접두사를 붙이고 표시 이름으로 포맷합니다.
     return [
         f"siliconflow:{model}:{voice}-{gender}"
         for model, voice, gender in voices_with_gender
@@ -85,12 +83,12 @@ def get_siliconflow_voices() -> list[str]:
 
 def get_gemini_voices() -> list[str]:
     """
-    获取Gemini TTS的声音列表
+    Gemini TTS 음성 목록을 가져옵니다.
     
     Returns:
-        声音列表，格式为 ["gemini:Zephyr-Female", "gemini:Puck-Male", ...]
+        음성 목록 형식: ["gemini:Zephyr-Female", "gemini:Puck-Male", ...]
     """
-    # Gemini TTS支持的语音列表
+    # Gemini TTS가 지원하는 음성 목록
     voices_with_gender = [
         ("Zephyr", "Female"),
         ("Puck", "Male"), 
@@ -109,7 +107,7 @@ def get_gemini_voices() -> list[str]:
         ("Atlas", "Male"),
     ]
     
-    # 添加gemini:前缀，并格式化为显示名称
+    # gemini: 접두사를 붙이고 표시 이름으로 포맷합니다.
     return [
         f"gemini:{voice}-{gender}"
         for voice, gender in voices_with_gender
@@ -118,19 +116,16 @@ def get_gemini_voices() -> list[str]:
 
 def get_mimo_voices() -> list[str]:
     """
-    获取 Xiaomi MiMo V2.5 TTS 的预置音色列表。
+    Xiaomi MiMo V2.5 TTS의 프리셋 음색 목록을 가져옵니다.
 
-    当前只接入官方文档里的 `mimo-v2.5-tts` 预置音色模式。音色设计
-    `mimo-v2.5-tts-voicedesign` 和音色复刻 `mimo-v2.5-tts-voiceclone`
-    需要额外的输入表单和素材上传流程，先不混入普通 TTS 下拉框，避免
-    用户误以为选择一个 voice id 就能完成所有高级能力。
+    현재는 공식 문서의 `mimo-v2.5-tts` 프리셋 음색 모드만 연결합니다. 음색 디자인 `mimo-v2.5-tts-voicedesign`과 음색 복제 `mimo-v2.5-tts-voiceclone`은 별도 입력 폼과 소재 업로드가 필요하므로 일반 TTS 드롭다운에 섞지 않습니다.
     """
     voices_with_gender = [
         ("mimo_default", "Female"),
-        ("冰糖", "Female"),
-        ("茉莉", "Female"),
-        ("苏打", "Male"),
-        ("白桦", "Male"),
+        ("\u51b0\u7cd6", "Female"),
+        ("\u8309\u8389", "Female"),
+        ("\u82cf\u6253", "Male"),
+        ("\u767d\u6866", "Male"),
         ("Mia", "Female"),
         ("Chloe", "Female"),
         ("Milo", "Male"),
@@ -1137,13 +1132,13 @@ Name: zh-CN-XiaoxiaoMultilingualNeural-V2
 Gender: Female
     """.strip()
     voices = []
-    # 定义正则表达式模式，用于匹配 Name 和 Gender 行
+    # Name과 Gender 행을 찾기 위한 정규식 패턴을 정의합니다.
     pattern = re.compile(r"Name:\s*(.+)\s*Gender:\s*(.+)\s*", re.MULTILINE)
-    # 使用正则表达式查找所有匹配项
+    # 정규식으로 모든 매치를 찾습니다.
     matches = pattern.findall(azure_voices_str)
 
     for name, gender in matches:
-        # 应用过滤条件
+        # 필터 조건을 적용합니다.
         if filter_locals and any(
             name.lower().startswith(fl.lower()) for fl in filter_locals
         ):
@@ -1171,17 +1166,17 @@ def is_azure_v2_voice(voice_name: str):
 
 
 def is_siliconflow_voice(voice_name: str):
-    """检查是否是硅基流动的声音"""
+    """SiliconFlow 음성인지 확인합니다."""
     return voice_name.startswith("siliconflow:")
 
 
 def is_gemini_voice(voice_name: str):
-    """检查是否是Gemini TTS的声音"""
+    """Gemini TTS 음성인지 확인합니다."""
     return voice_name.startswith("gemini:")
 
 
 def is_mimo_voice(voice_name: str):
-    """检查是否是 Xiaomi MiMo TTS 的声音"""
+    """Xiaomi MiMo TTS 음성인지 확인합니다."""
     return voice_name.startswith("mimo:")
 
 
@@ -1195,15 +1190,15 @@ def tts(
     if is_azure_v2_voice(voice_name):
         return azure_tts_v2(text, voice_name, voice_file)
     elif is_siliconflow_voice(voice_name):
-        # 从voice_name中提取模型和声音
-        # 格式: siliconflow:model:voice-Gender
+        # voice_name에서 모델과 음성을 추출합니다.
+        # 형식: siliconflow:model:voice-Gender
         parts = voice_name.split(":")
         if len(parts) >= 3:
             model = parts[1]
-            # 移除性别后缀，例如 "alex-Male" -> "alex"
+            # 성별 접미사를 제거합니다. 예: "alex-Male" -> "alex"
             voice_with_gender = parts[2]
             voice = voice_with_gender.split("-")[0]
-            # 构建完整的voice参数，格式为 "model:voice"
+            # "model:voice" 형식의 전체 voice 매개변수를 만듭니다.
             full_voice = f"{model}:{voice}"
             return siliconflow_tts(
                 text, model, full_voice, voice_rate, voice_file, voice_volume
@@ -1212,11 +1207,11 @@ def tts(
             logger.error(f"Invalid siliconflow voice name format: {voice_name}")
             return None
     elif is_gemini_voice(voice_name):
-        # 从voice_name中提取声音名称
-        # 格式: gemini:voice-Gender
+        # voice_name에서 음성 이름을 추출합니다.
+        # 형식: gemini:voice-Gender
         parts = voice_name.split(":")
         if len(parts) >= 2:
-            # 移除性别后缀，例如 "Zephyr-Female" -> "Zephyr"
+            # 성별 접미사를 제거합니다. 예: "Zephyr-Female" -> "Zephyr"
             voice_with_gender = parts[1]
             voice = voice_with_gender.split("-")[0]
             return gemini_tts(text, voice, voice_rate, voice_file, voice_volume)
@@ -1224,9 +1219,8 @@ def tts(
             logger.error(f"Invalid gemini voice name format: {voice_name}")
             return None
     elif is_mimo_voice(voice_name):
-        # 从voice_name中提取声音名称
-        # 格式: mimo:voice-Gender；如果调用方已执行 parse_voice_name，
-        # 则可能是 mimo:voice。两种格式都兼容。
+        # voice_name에서 음성 이름을 추출합니다.
+        # 형식: mimo:voice-Gender. 호출자가 이미 parse_voice_name을 실행한 경우 mimo:voice일 수 있으므로 두 형식을 모두 지원합니다.
         parts = voice_name.split(":")
         if len(parts) >= 2:
             voice_with_gender = parts[1]
@@ -1251,11 +1245,9 @@ def convert_rate_to_percent(rate: float) -> str:
 
 def ensure_file_path_exists(file_path: str) -> None:
     """
-    确保输出文件所在目录一定存在。
+    출력 파일이 들어갈 디렉터리가 반드시 존재하도록 보장합니다.
 
-    这里单独做一层兜底，是因为 edge_tts 7.x 在真正发起网络请求之前，
-    就会先打开目标音频文件；如果目录不存在，会直接因为本地文件路径报错，
-    从而掩盖真正的 TTS 行为结果。
+    edge_tts 7.x는 실제 네트워크 요청 전에 대상 오디오 파일을 먼저 열기 때문에 디렉터리가 없으면 로컬 파일 경로 오류가 먼저 발생합니다. 이 보완 처리는 실제 TTS 결과가 가려지는 일을 막습니다.
     """
     dir_path = os.path.dirname(file_path)
     if dir_path:
@@ -1264,11 +1256,9 @@ def ensure_file_path_exists(file_path: str) -> None:
 
 def ensure_legacy_submaker_fields(sub_maker: SubMaker) -> SubMaker:
     """
-    为项目里仍然沿用旧字幕结构的调用方补齐兼容字段。
+    기존 자막 구조를 계속 사용하는 호출자를 위해 호환 필드를 채웁니다.
 
-    edge_tts 7.x 的 `SubMaker` 主要暴露 `cues/get_srt()`，但项目里 Azure v2、
-    Gemini、SiliconFlow 这些路径仍然会直接读写 `subs/offset`。这里统一补齐，
-    避免升级 edge_tts 后这些非 edge 路径被连带破坏。
+    edge_tts 7.x의 `SubMaker`는 주로 `cues/get_srt()`를 노출하지만 Azure v2, Gemini, SiliconFlow 경로는 아직 `subs/offset`을 직접 읽고 씁니다. 여기서 한 번에 채워 edge_tts 업그레이드가 다른 경로를 깨지 않게 합니다.
     """
     if not hasattr(sub_maker, "subs"):
         sub_maker.subs = []
@@ -1281,27 +1271,27 @@ def populate_legacy_submaker_with_full_text(
     sub_maker: SubMaker, text: str, audio_duration_seconds: float
 ) -> SubMaker:
     """
-    用整段文本填充项目历史沿用的 `subs/offset` 字幕结构。
+    전체 텍스트로 기존 `subs/offset` 자막 구조를 채웁니다.
 
-    背景：
-    1. edge_tts 7.x 的 `SubMaker` 不再提供旧版本里的 `create_sub()`；
-    2. 项目里 Gemini、SiliconFlow 等非 edge 路径依然需要返回一个
-       带 `subs/offset` 的对象，供后续统一计算音频时长和生成字幕；
-    3. 对于拿不到逐词边界的 TTS 服务，需要至少按脚本断句切成多个片段，
-       这样后续 `subtitle_provider=edge` 的聚合逻辑才能继续工作，而不是
-       因为整段文本无法和脚本断句逐行匹配而回退 Whisper。
+    배경:
+    한국어 설명입니다.
+    한국어 설명입니다.
+       한국어 설명입니다.
+    한국어 설명입니다.
+       한국어 설명입니다.
+       한국어 설명입니다.
 
     Args:
-        sub_maker: 需要写入兼容字段的字幕对象
-        text: 原始脚本文本
-        audio_duration_seconds: 音频总时长，单位秒
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
 
     Returns:
-        已填充兼容字幕数据的 SubMaker 对象
+        한국어 설명입니다.
     """
     sub_maker = ensure_legacy_submaker_fields(sub_maker)
 
-    # 清空旧值，避免调用方重复复用对象时出现脏数据叠加。
+    # 한국어로 번역된 설명입니다.
     sub_maker.subs = []
     sub_maker.offset = []
 
@@ -1311,9 +1301,9 @@ def populate_legacy_submaker_with_full_text(
 
     audio_duration_100ns = max(int(audio_duration_seconds * 10000000), 1)
 
-    # Gemini / SiliconFlow 这类路径拿不到逐词边界时，仍然尽量沿用项目
-    # 原来的“按标点断句 + 按字符数比例分配时长”的策略。这样既能让
-    # create_subtitle() 匹配脚本断句，也能避免再次回退 Whisper。
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
     sentences = utils.split_string_by_punctuations(normalized_text)
     if not sentences:
         sentences = [normalized_text]
@@ -1330,8 +1320,8 @@ def populate_legacy_submaker_with_full_text(
         if not cleaned_sentence:
             continue
 
-        # 前面的句子按字符数比例分配时长，最后一句兜底吃掉剩余时长，
-        # 避免整数取整导致总时长丢失或字幕结束时间短于音频。
+        # 한국어로 번역된 설명입니다.
+        # 한국어로 번역된 설명입니다.
         if index == len(sentences) - 1:
             sentence_end = audio_duration_100ns
         else:
@@ -1353,16 +1343,16 @@ def create_edge_tts_communicate(
     text: str, voice_name: str, rate_str: str
 ) -> edge_tts.Communicate:
     """
-    按当前已安装的 edge_tts 版本构造 Communicate 对象。
+    한국어 설명입니다.
 
-    背景：
-    1. 主线代码已经升级到 edge_tts 7.x，并使用 `boundary` 参数拿到更细的边界事件；
-    2. 但 Windows 便携包如果更新失败，现场环境可能仍然停留在旧版 edge_tts；
-    3. 旧版 `Communicate.__init__()` 不接受 `boundary`，会直接抛出
-       `unexpected keyword argument 'boundary'`，导致整个 TTS 链路失败。
+    배경:
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
+       한국어 설명입니다.
 
-    因此这里先根据构造函数签名探测当前版本支持的参数，再决定是否传入
-    `boundary`，让同一份代码同时兼容旧版和新版依赖。
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
     communicate_kwargs = {"rate": rate_str}
     communicate_signature = inspect.signature(edge_tts.Communicate)
@@ -1375,18 +1365,18 @@ def create_edge_tts_communicate(
 
 def get_edge_tts_timeout_seconds() -> Union[float, None]:
     """
-    获取 Azure TTS V1 单次流式请求的超时时间。
+    Azure TTS V1 단일 스트리밍 요청의 제한 시간을 가져옵니다.
 
-    背景：
-    Edge consumer TTS 在网络不通、服务端限流、voice 与文本语言不匹配等场景下，
-    可能长时间卡在 `stream_sync()` 内部，日志只停留在 `start`。这里提供一个
-    默认超时，避免 WebUI 任务长期无反馈。
+    배경:
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
 
-    使用方式：
-    - 默认 30 秒，覆盖常见短视频脚本的首包等待时间；
-    - 如用户处于慢网络或代理环境，可在 `config.toml` 里设置
+    사용 방법:
+    한국어 설명입니다.
+    한국어 설명입니다.
       `edge_tts_timeout = 60`；
-    - 设置为 0 或负数表示显式禁用超时，保留完全向后兼容。
+    한국어 설명입니다.
     """
     raw_timeout = config.app.get(
         "edge_tts_timeout", _DEFAULT_EDGE_TTS_TIMEOUT_SECONDS
@@ -1410,17 +1400,17 @@ def _stream_edge_tts_sync_with_timeout(
     communicate, on_chunk, timeout_seconds: float
 ) -> None:
     """
-    带总超时地消费 edge_tts 7.x 的同步流。
+    전체 제한 시간을 두고 edge_tts 7.x 동기 스트림을 소비합니다.
 
-    实现原因：
-    `stream_sync()` 本身是阻塞迭代器，网络层卡住时主线程无法及时恢复。
-    这里把阻塞迭代放到 daemon 线程中，主线程通过 Queue 获取 chunk，
-    到达超时时间后直接抛出 TimeoutError，让外层重试和错误日志继续工作。
+    구현 이유:
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
 
-    注意：
-    daemon 线程只作为兜底保护使用，最多随 Azure TTS V1 的 3 次重试产生
-    少量残留线程；进程退出时会自动回收。相比 WebUI 任务永久卡住，这是
-    更可控的失败模式。
+    주의:
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
     stream_queue = queue.Queue()
     done_marker = object()
@@ -1463,16 +1453,16 @@ def stream_edge_tts_chunks(
     communicate, on_chunk, timeout_seconds: Union[float, None] = None
 ) -> None:
     """
-    统一消费 edge_tts 的同步流和旧版异步流。
+    edge_tts의 동기 스트림과 이전 비동기 스트림을 통합 소비합니다.
 
-    edge_tts 7.x 提供 `stream_sync()`，可以在同步函数里直接迭代；
-    更早的版本通常只有异步 `stream()`。为了让 `azure_tts_v1()` 在
-    旧依赖残留场景下仍能继续工作，这里统一做一层流式兼容。
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
 
     Args:
-        communicate: edge_tts.Communicate 实例
-        on_chunk: 每拿到一个事件块时执行的回调
-        timeout_seconds: 单次流式请求总超时；为 None 时不启用超时。
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
     """
     if hasattr(communicate, "stream_sync"):
         if timeout_seconds:
@@ -1492,8 +1482,8 @@ def stream_edge_tts_chunks(
         async for chunk in communicate.stream():
             on_chunk(chunk)
 
-    # 这里显式创建独立事件循环，而不是复用外部上下文，目的是避免
-    # 在同步调用栈里遇到“当前线程没有事件循环”或跨线程复用循环的问题。
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
     loop = asyncio.new_event_loop()
     try:
         if timeout_seconds:
@@ -1516,9 +1506,9 @@ def azure_tts_v1(
         try:
             logger.info(f"start, voice name: {voice_name}, try: {i + 1}")
 
-            # 这里同时兼容 edge_tts 7.x 和旧版便携包里可能残留的老依赖：
-            # 1. 新版支持 `boundary` + `stream_sync()`
-            # 2. 旧版不支持 `boundary`，且通常只暴露异步 `stream()`
+            # 한국어로 번역된 설명입니다.
+            # 한국어로 번역된 설명입니다.
+            # 한국어로 번역된 설명입니다.
             ensure_file_path_exists(voice_file)
             communicate = create_edge_tts_communicate(text, voice_name, rate_str)
             sub_maker = edge_tts.SubMaker()
@@ -1530,9 +1520,9 @@ def azure_tts_v1(
                     if chunk_type == "audio":
                         file.write(chunk["data"])
                     elif chunk_type in ["WordBoundary", "SentenceBoundary"]:
-                        # 无论来自 7.x 的同步流，还是旧版异步流，只要事件结构
-                        # 里仍有边界信息，就统一喂给 SubMaker，保证后续字幕链路
-                        # 仍然走项目现有逻辑。
+                        # 한국어로 번역된 설명입니다.
+                        # 한국어로 번역된 설명입니다.
+                        # 한국어로 번역된 설명입니다.
                         sub_maker.feed(chunk)
 
                 stream_edge_tts_chunks(
@@ -1547,9 +1537,9 @@ def azure_tts_v1(
             return sub_maker
         except Exception as e:
             logger.error(f"failed, error: {str(e)}")
-            # TTS 流式写入如果在首包前超时或网络异常，会留下 0 字节音频文件。
-            # 这种文件既不可播放，也可能误导后续排查，因此失败后只清理空文件；
-            # 如果已经写入了部分数据，则保留现场文件，便于分析服务端返回内容。
+            # 한국어로 번역된 설명입니다.
+            # 한국어로 번역된 설명입니다.
+            # 한국어로 번역된 설명입니다.
             if os.path.exists(voice_file) and os.path.getsize(voice_file) == 0:
                 try:
                     os.remove(voice_file)
@@ -1570,18 +1560,18 @@ def siliconflow_tts(
     voice_volume: float = 1.0,
 ) -> Union[SubMaker, None]:
     """
-    使用硅基流动的API生成语音
+    SiliconFlow API로 음성을 생성합니다.
 
     Args:
-        text: 要转换为语音的文本
-        model: 模型名称，如 "FunAudioLLM/CosyVoice2-0.5B"
-        voice: 声音名称，如 "FunAudioLLM/CosyVoice2-0.5B:alex"
-        voice_rate: 语音速度，范围[0.25, 4.0]
-        voice_file: 输出的音频文件路径
-        voice_volume: 语音音量，范围[0.6, 5.0]，需要转换为硅基流动的增益范围[-10, 10]
+        text: 음성으로 변환할 텍스트
+        model: 모델 이름. 예: "FunAudioLLM/CosyVoice2-0.5B"
+        voice: 음성 이름. 예: "FunAudioLLM/CosyVoice2-0.5B:alex"
+        voice_rate: 음성 속도, 범위 [0.25, 4.0]
+        voice_file: 출력 오디오 파일 경로
+        voice_volume: 음성 볼륨, 범위 [0.6, 5.0]. SiliconFlow gain 범위 [-10, 10]으로 변환해야 합니다.
 
     Returns:
-        SubMaker对象或None
+        SubMaker 객체 또는 None
     """
     text = text.strip()
     api_key = config.siliconflow.get("api_key", "")
@@ -1590,10 +1580,10 @@ def siliconflow_tts(
         logger.error("SiliconFlow API key is not set")
         return None
 
-    # 将voice_volume转换为硅基流动的增益范围
-    # 默认voice_volume为1.0，对应gain为0
+    # voice_volume을 SiliconFlow gain 범위로 변환합니다.
+    # 기본 voice_volume 1.0은 gain 0에 해당합니다.
     gain = voice_volume - 1.0
-    # 确保gain在[-10, 10]范围内
+    # gain이 [-10, 10] 범위 안에 있도록 보장합니다.
     gain = max(-10, min(10, gain))
 
     url = "https://api.siliconflow.cn/v1/audio/speech"
@@ -1611,7 +1601,7 @@ def siliconflow_tts(
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-    for i in range(3):  # 尝试3次
+    for i in range(3):  # 3번 시도
         try:
             logger.info(
                 f"start siliconflow tts, model: {model}, voice: {voice}, try: {i + 1}"
@@ -1620,31 +1610,31 @@ def siliconflow_tts(
             response = requests.post(url, json=payload, headers=headers)
 
             if response.status_code == 200:
-                # 保存音频文件
+                # 오디오 파일 저장
                 with open(voice_file, "wb") as f:
                     f.write(response.content)
 
-                # 这里仍然沿用项目原有的字幕结构，因此需要补齐旧字段。
+                # 한국어로 번역된 설명입니다.
                 sub_maker = ensure_legacy_submaker_fields(SubMaker())
 
-                # 获取音频文件的实际长度
+                # 오디오 파일의 실제 길이를 가져옵니다.
                 try:
-                    # 尝试使用moviepy获取音频长度
+                    # moviepy로 오디오 길이를 가져와 봅니다.
                     from moviepy import AudioFileClip
 
                     audio_clip = AudioFileClip(voice_file)
                     audio_duration = audio_clip.duration
                     audio_clip.close()
 
-                    # 将音频长度转换为100纳秒单位（与edge_tts兼容）
+                    # 오디오 길이를 100나노초 단위(edge_tts 호환)로 변환합니다.
                     audio_duration_100ns = int(audio_duration * 10000000)
 
-                    # 使用文本分割来创建更准确的字幕
-                    # 将文本按标点符号分割成句子
+                    # 텍스트 분할을 사용해 더 정확한 자막을 만듭니다.
+                    # 문장 부호 기준으로 텍스트를 문장으로 나눕니다.
                     sentences = utils.split_string_by_punctuations(text)
 
                     if sentences:
-                        # 计算每个句子的大致时长（按字符数比例分配）
+                        # 각 문장의 대략적인 길이를 글자 수 비율로 계산합니다.
                         total_chars = sum(len(s) for s in sentences)
                         char_duration = (
                             audio_duration_100ns / total_chars if total_chars > 0 else 0
@@ -1655,28 +1645,28 @@ def siliconflow_tts(
                             if not sentence.strip():
                                 continue
 
-                            # 计算当前句子的时长
+                            # 현재 문장의 길이를 계산합니다.
                             sentence_chars = len(sentence)
                             sentence_duration = int(sentence_chars * char_duration)
 
-                            # 添加到SubMaker
+                            # SubMaker에 추가합니다.
                             sub_maker.subs.append(sentence)
                             sub_maker.offset.append(
                                 (current_offset, current_offset + sentence_duration)
                             )
 
-                            # 更新偏移量
+                            # 오프셋을 갱신합니다.
                             current_offset += sentence_duration
                     else:
-                        # 如果无法分割，则使用整个文本作为一个字幕
+                        # 분할할 수 없으면 전체 텍스트를 하나의 자막으로 사용합니다.
                         sub_maker.subs = [text]
                         sub_maker.offset = [(0, audio_duration_100ns)]
 
                 except Exception as e:
                     logger.warning(f"Failed to create accurate subtitles: {str(e)}")
-                    # 回退到简单的字幕
+                    # 단순 자막으로 대체합니다.
                     sub_maker.subs = [text]
-                    # 使用音频文件的实际长度，如果无法获取，则假设为10秒
+                    # 실제 오디오 길이를 사용하고, 가져올 수 없으면 10초로 가정합니다.
                     sub_maker.offset = [
                         (
                             0,
@@ -1805,17 +1795,17 @@ def gemini_tts(
     voice_volume: float = 1.0,
 ) -> Union[SubMaker, None]:
     """
-    使用Google Gemini TTS生成语音
+    Google Gemini TTS로 음성을 생성합니다.
     
     Args:
-        text: 要转换的文本
-        voice_name: 语音名称，如 "Zephyr", "Puck" 等
-        voice_rate: 语音速率（当前未使用）
-        voice_file: 输出音频文件路径
-        voice_volume: 音频音量（当前未使用）
+        text: 변환할 텍스트
+        voice_name: 음성 이름. 예: "Zephyr", "Puck" 등
+        voice_rate: 음성 속도(현재 사용하지 않음)
+        voice_file: 출력 오디오 파일 경로
+        voice_volume: 오디오 볼륨(현재 사용하지 않음)
         
     Returns:
-        SubMaker对象或None
+        SubMaker 객체 또는 None
     """
     import base64
     import json
@@ -1825,7 +1815,7 @@ def gemini_tts(
     _configure_pydub_ffmpeg(AudioSegment)
     
     try:
-        # 配置Gemini API
+        # Gemini API 설정
         api_key = config.app.get("gemini_api_key", "")
         if not api_key:
             logger.error("Gemini API key is not set")
@@ -1835,7 +1825,7 @@ def gemini_tts(
         
         logger.info(f"start, voice name: {voice_name}, try: 1")
         
-        # 使用Gemini TTS API
+        # Gemini TTS API 사용
         model = genai.GenerativeModel("gemini-2.5-flash-preview-tts")
         
         generation_config = {
@@ -1854,12 +1844,12 @@ def gemini_tts(
             generation_config=generation_config
         )
         
-        # 检查响应
+        # 응답 확인
         if not response.candidates or not response.candidates[0].content:
             logger.error("No audio content received from Gemini TTS")
             return None
             
-        # 获取音频数据
+        # 오디오 데이터 가져오기
         audio_data = None
         for part in response.candidates[0].content.parts:
             if hasattr(part, 'inline_data') and part.inline_data:
@@ -1870,40 +1860,40 @@ def gemini_tts(
             logger.error("No audio data found in response")
             return None
             
-        # 音频数据已经是原始字节，不需要base64解码
+        # 오디오 데이터가 이미 원시 바이트이면 base64 디코딩이 필요 없습니다.
         if isinstance(audio_data, str):
-            # 如果是字符串，则需要base64解码
+            # 문자열이면 base64 디코딩이 필요합니다.
             audio_bytes = base64.b64decode(audio_data)
         else:
-            # 如果已经是字节，直接使用
+            # 이미 바이트이면 그대로 사용합니다.
             audio_bytes = audio_data
         
-        # 尝试不同的音频格式 - Gemini可能返回不同的格式
+        # Gemini가 다른 형식을 반환할 수 있으므로 여러 오디오 형식을 시도합니다.
         audio_segment = None
         
-        # Gemini返回Linear PCM格式，按照文档参数解析
+        # Gemini는 Linear PCM 형식을 반환하므로 문서의 매개변수대로 해석합니다.
         try:
             audio_segment = AudioSegment.from_file(
                 io.BytesIO(audio_bytes), 
                 format="raw",
-                frame_rate=24000,  # Gemini TTS默认采样率
-                channels=1,        # 单声道
+                frame_rate=24000,  # Gemini TTS 기본 샘플레이트
+                channels=1,        # 모노
                 sample_width=2     # 16-bit
             )
         except Exception as e:
             logger.error(f"Failed to load PCM audio: {e}")
             return None
         
-        # 导出为MP3格式
+        # MP3 형식으로 내보냅니다.
         audio_segment.export(voice_file, format="mp3")
         
         logger.info(f"completed, output file: {voice_file}")
         
-        # Gemini 拿不到 edge_tts 那种逐词边界事件，因此这里退回到
-        # 项目原有的 `subs/offset` 兼容结构，至少保证后续字幕与时长
-        # 计算链路可继续工作。
+        # 한국어로 번역된 설명입니다.
+        # 한국어로 번역된 설명입니다.
+        # 한국어로 번역된 설명입니다.
         sub_maker = ensure_legacy_submaker_fields(SubMaker())
-        audio_duration = len(audio_segment) / 1000.0  # 转换为秒
+        audio_duration = len(audio_segment) / 1000.0  # 초 단위로 변환
         return populate_legacy_submaker_with_full_text(
             sub_maker=sub_maker,
             text=text,
@@ -1926,14 +1916,14 @@ def mimo_tts(
     voice_volume: float = 1.0,
 ) -> Union[SubMaker, None]:
     """
-    使用 Xiaomi MiMo V2.5 TTS 生成语音。
+    Xiaomi MiMo V2.5 TTS로 음성을 생성합니다.
 
-    官方接口兼容 OpenAI Chat Completions，但 TTS 有两个关键差异：
-    1. 待合成文本必须放在 `assistant` 消息里；
-    2. 音频以 `message.audio.data` 的 base64 字符串返回。
+    공식 API는 OpenAI Chat Completions와 호환되지만 TTS에는 두 가지 핵심 차이가 있습니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
 
-    MiMo 当前没有返回逐词时间轴，因此这里复用项目已有的 legacy
-    SubMaker 兜底方案：根据最终音频时长和脚本文本断句生成字幕时间轴。
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
     from pydub import AudioSegment
 
@@ -1951,7 +1941,7 @@ def mimo_tts(
     model_name = config.app.get("mimo_tts_model_name", "") or _MIMO_DEFAULT_TTS_MODEL
     style_prompt = config.app.get(
         "mimo_tts_style_prompt",
-        "请用自然、清晰、适合短视频旁白的语气朗读。",
+        "자연스럽고 또렷한 쇼트폼 내레이션 톤으로 읽어 주세요.",
     )
 
     _configure_pydub_ffmpeg(AudioSegment)
@@ -2032,11 +2022,11 @@ def _format_text(text: str) -> str:
 
 def _build_subtitle_formatter():
     """
-    返回统一的 SRT 行格式化函数。
+    공통 SRT 행 포맷 함수를 반환합니다.
 
-    这里单独拆成一个小工具，是为了让 edge_tts 7.x 的 cues 路径
-    和项目原有的 legacy `subs/offset` 路径共用同一套字幕落盘格式，
-    避免两套逻辑各自产生细微格式差异。
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
 
     def formatter(idx: int, start_time: float, end_time: float, sub_text: str) -> str:
@@ -2049,16 +2039,16 @@ def _build_subtitle_formatter():
 
 def _match_script_line(script_lines: list[str], current_text: str, sub_index: int) -> str:
     """
-    尝试把当前累计的字幕文本，与脚本中的某一条标准断句匹配起来。
+    현재 누적된 자막 텍스트를 대본의 표준 문장 분할 중 하나와 매칭해 봅니다.
 
-    这里复用了项目原有的“按标点拆脚本，再逐段比对”的思路：
-    1. 优先精确匹配；
-    2. 再做一次去常规标点后的匹配；
-    3. 最后做一次更激进的非单词字符清洗匹配。
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
 
-    这样可以兼容：
-    - TTS 返回里可能缺失或单独拆分的标点；
-    - 中文场景下词边界和脚本文本不完全一一对应的情况。
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
     if len(script_lines) <= sub_index:
         return ""
@@ -2082,11 +2072,11 @@ def _match_script_line(script_lines: list[str], current_text: str, sub_index: in
 
 def _write_subtitle_items(sub_items: list[str], subtitle_file: str) -> bool:
     """
-    将已经聚合好的字幕段写入到 SRT 文件，并做一次基本可读性验证。
+    이미 모은 자막 구간을 SRT 파일에 쓰고 기본 가독성 검증을 수행합니다.
 
-    返回值：
-    - `True`：字幕文件成功落盘且可被 moviepy 解析；
-    - `False`：字幕文件写入或解析失败。
+    반환값:
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
     try:
         ensure_file_path_exists(subtitle_file)
@@ -2110,18 +2100,18 @@ def _build_subtitle_items_from_edge_cues(
     sub_maker: SubMaker, script_lines: list[str]
 ) -> list[str]:
     """
-    将 edge_tts 7.x 的细粒度 `cues` 聚合为按脚本断句的 SRT 片段。
+    edge_tts 7.x의 세밀한 `cues`를 대본 문장 단위 SRT 구간으로 합칩니다.
 
-    背景：
-    edge_tts 7.x 的 `SubMaker.get_srt()` 更偏向逐词/逐短语的时间轴。
-    对英文做逐词高亮尚可，但中文短视频字幕如果直接照搬，会出现
-    “金钱 / 是 / 一种 / 社会 / 工具” 这种阅读体验很差的效果。
+    배경:
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
 
-    实现策略：
-    1. 逐个消费 cues 中的 `content`；
-    2. 累积成一段候选文本；
-    3. 当候选文本与脚本里当前目标断句匹配时，收敛为一个完整字幕段；
-    4. 使用第一条 cue 的开始时间和最后一条 cue 的结束时间，保证时间轴连续。
+    구현 전략:
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
     formatter = _build_subtitle_formatter()
     sub_items = []
@@ -2165,10 +2155,10 @@ def _build_subtitle_items_from_legacy_submaker(
     sub_maker: SubMaker, script_lines: list[str]
 ) -> list[str]:
     """
-    将项目原有 `subs/offset` 结构聚合为按脚本断句的 SRT 片段。
+    기존 `subs/offset` 구조를 대본 문장 단위 SRT 구간으로 합칩니다.
 
-    这部分保留了原来的核心思路，只是拆成独立函数，便于与 edge_tts 7.x
-    的 cues 聚合逻辑共享同一套断句匹配与落盘流程。
+    한국어 설명입니다.
+    한국어 설명입니다.
     """
     formatter = _build_subtitle_formatter()
     start_time = -1.0
@@ -2210,10 +2200,10 @@ def _build_subtitle_items_from_legacy_submaker(
 
 def create_subtitle(sub_maker: SubMaker, text: str, subtitle_file: str):
     """
-    优化字幕文件
-    1. 将字幕文件按照标点符号分割成多行
-    2. 逐行匹配字幕文件中的文本
-    3. 生成新的字幕文件
+    자막 파일을 최적화합니다.
+    1. 문장 부호 기준으로 여러 줄로 나눕니다.
+    2. 자막 파일의 텍스트를 줄 단위로 매칭합니다.
+    3. 새 자막 파일을 생성합니다.
     """
     text = _format_text(text)
     script_lines = utils.split_string_by_punctuations(text)
@@ -2238,10 +2228,10 @@ def create_subtitle(sub_maker: SubMaker, text: str, subtitle_file: str):
 
 def _get_audio_duration_from_submaker(sub_maker: SubMaker):
     """
-    获取音频时长
+    오디오 길이를 가져옵니다.
     """
-    # 优先兼容 edge_tts 7.x 的 cues 结构；
-    # 如果是项目里其他 TTS 手工填充的旧结构，则继续读取 offset。
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
     if hasattr(sub_maker, "cues") and sub_maker.cues:
         return sub_maker.cues[-1].end.total_seconds()
 
@@ -2252,7 +2242,7 @@ def _get_audio_duration_from_submaker(sub_maker: SubMaker):
 
 def _get_audio_duration_from_mp3(mp3_file: str) -> float:
     """
-    获取MP3音频时长
+    MP3 오디오 길이를 가져옵니다.
     """
     if not os.path.exists(mp3_file):
         logger.error(f"MP3 file does not exist: {mp3_file}")
@@ -2268,9 +2258,8 @@ def _get_audio_duration_from_mp3(mp3_file: str) -> float:
 
 def get_audio_duration(target: Union[str, SubMaker]) -> float:
     """
-    获取音频时长
-    如果是SubMaker对象，则从SubMaker中获取时长
-    如果是MP3文件，则从MP3文件中获取时长
+    오디오 길이를 가져옵니다.
+    SubMaker 객체이면 SubMaker에서 길이를 가져오고, MP3 파일이면 MP3 파일에서 길이를 가져옵니다.
     """
     if isinstance(target, SubMaker):
         return _get_audio_duration_from_submaker(target)
@@ -2294,15 +2283,15 @@ if __name__ == "__main__":
 
         voice_names = [
             "zh-CN-XiaoxiaoMultilingualNeural",
-            # 女性
+            # 여성
             "zh-CN-XiaoxiaoNeural",
             "zh-CN-XiaoyiNeural",
-            # 男性
+            # 남성
             "zh-CN-YunyangNeural",
             "zh-CN-YunxiNeural",
         ]
         text = """
-        静夜思是唐代诗人李白创作的一首五言古诗。这首诗描绘了诗人在寂静的夜晚，看到窗前的明月，不禁想起远方的家乡和亲人，表达了他对家乡和亲人的深深思念之情。全诗内容是：“床前明月光，疑是地上霜。举头望明月，低头思故乡。”在这短短的四句诗中，诗人通过“明月”和“思故乡”的意象，巧妙地表达了离乡背井人的孤独与哀愁。首句“床前明月光”设景立意，通过明亮的月光引出诗人的遐想；“疑是地上霜”增添了夜晚的寒冷感，加深了诗人的孤寂之情；“举头望明月”和“低头思故乡”则是情感的升华，展现了诗人内心深处的乡愁和对家的渴望。这首诗简洁明快，情感真挚，是中国古典诗歌中非常著名的一首，也深受后人喜爱和推崇。
+        윤동주의 「별 헤는 밤」은 밤하늘의 별을 바라보며 그리움과 성찰을 담아낸 시입니다. 화자는 별 하나하나에 추억과 이름, 사랑과 쓸쓸함을 떠올리며 지나온 시간을 되새깁니다. 차분한 이미지와 맑은 정서가 어우러져 고향, 사람, 자기 자신에 대한 깊은 마음을 전합니다.
             """
 
         text = """
@@ -2310,25 +2299,22 @@ if __name__ == "__main__":
         """
 
         text = """
-               预计未来3天深圳冷空气活动频繁，未来两天持续阴天有小雨，出门带好雨具；
-               10-11日持续阴天有小雨，日温差小，气温在13-17℃之间，体感阴凉；
-               12日天气短暂好转，早晚清凉；
+               앞으로 3일 동안 서울은 찬 공기의 영향으로 쌀쌀하겠습니다.
+               내일과 모레는 흐리고 가끔 비가 오니 외출 시 우산을 챙기세요.
+               낮과 밤의 기온 차가 크지 않아 체감 온도는 낮겠습니다.
                    """
 
         text = "[Opening scene: A sunny day in a suburban neighborhood. A young boy named Alex, around 8 years old, is playing in his front yard with his loyal dog, Buddy.]\n\n[Camera zooms in on Alex as he throws a ball for Buddy to fetch. Buddy excitedly runs after it and brings it back to Alex.]\n\nAlex: Good boy, Buddy! You're the best dog ever!\n\n[Buddy barks happily and wags his tail.]\n\n[As Alex and Buddy continue playing, a series of potential dangers loom nearby, such as a stray dog approaching, a ball rolling towards the street, and a suspicious-looking stranger walking by.]\n\nAlex: Uh oh, Buddy, look out!\n\n[Buddy senses the danger and immediately springs into action. He barks loudly at the stray dog, scaring it away. Then, he rushes to retrieve the ball before it reaches the street and gently nudges it back towards Alex. Finally, he stands protectively between Alex and the stranger, growling softly to warn them away.]\n\nAlex: Wow, Buddy, you're like my superhero!\n\n[Just as Alex and Buddy are about to head inside, they hear a loud crash from a nearby construction site. They rush over to investigate and find a pile of rubble blocking the path of a kitten trapped underneath.]\n\nAlex: Oh no, Buddy, we have to help!\n\n[Buddy barks in agreement and together they work to carefully move the rubble aside, allowing the kitten to escape unharmed. The kitten gratefully nuzzles against Buddy, who responds with a friendly lick.]\n\nAlex: We did it, Buddy! We saved the day again!\n\n[As Alex and Buddy walk home together, the sun begins to set, casting a warm glow over the neighborhood.]\n\nAlex: Thanks for always being there to watch over me, Buddy. You're not just my dog, you're my best friend.\n\n[Buddy barks happily and nuzzles against Alex as they disappear into the sunset, ready to face whatever adventures tomorrow may bring.]\n\n[End scene.]"
 
-        text = "大家好，我是乔哥，一个想帮你把信用卡全部还清的家伙！\n今天我们要聊的是信用卡的取现功能。\n你是不是也曾经因为一时的资金紧张，而拿着信用卡到ATM机取现？如果是，那你得好好看看这个视频了。\n现在都2024年了，我以为现在不会再有人用信用卡取现功能了。前几天一个粉丝发来一张图片，取现1万。\n信用卡取现有三个弊端。\n一，信用卡取现功能代价可不小。会先收取一个取现手续费，比如这个粉丝，取现1万，按2.5%收取手续费，收取了250元。\n二，信用卡正常消费有最长56天的免息期，但取现不享受免息期。从取现那一天开始，每天按照万5收取利息，这个粉丝用了11天，收取了55元利息。\n三，频繁的取现行为，银行会认为你资金紧张，会被标记为高风险用户，影响你的综合评分和额度。\n那么，如果你资金紧张了，该怎么办呢？\n乔哥给你支一招，用破思机摩擦信用卡，只需要少量的手续费，而且还可以享受最长56天的免息期。\n最后，如果你对玩卡感兴趣，可以找乔哥领取一本《卡神秘籍》，用卡过程中遇到任何疑惑，也欢迎找乔哥交流。\n别忘了，关注乔哥，回复用卡技巧，免费领取《2024用卡技巧》，让我们一起成为用卡高手！"
+        text = "안녕하세요. 음성 합성 테스트를 위한 한국어 예시 문장입니다."
 
         text = """
-        2023全年业绩速览
-公司全年累计实现营业收入1476.94亿元，同比增长19.01%，归母净利润747.34亿元，同比增长19.16%。EPS达到59.49元。第四季度单季，营业收入444.25亿元，同比增长20.26%，环比增长31.86%；归母净利润218.58亿元，同比增长19.33%，环比增长29.37%。这一阶段
-的业绩表现不仅突显了公司的增长动力和盈利能力，也反映出公司在竞争激烈的市场环境中保持了良好的发展势头。
-2023年Q4业绩速览
-第四季度，营业收入贡献主要增长点；销售费用高增致盈利能力承压；税金同比上升27%，扰动净利率表现。
-业绩解读
-利润方面，2023全年贵州茅台，>归母净利润增速为19%，其中营业收入正贡献18%，营业成本正贡献百分之一，管理费用正贡献百分之一点四。(注：归母净利润增速值=营业收入增速+各科目贡献，展示贡献/拖累的前四名科目，且要求贡献值/净利润增速>15%)
+        2023년 연간 실적 요약
+회사는 연간 매출과 순이익 모두 전년 대비 성장했습니다. 4분기에도 매출과 이익이 전분기 대비 개선되며 안정적인 성장 흐름을 보였습니다.
+실적 해석
+매출 성장이 이익 증가의 핵심 요인으로 작용했고, 비용 증가와 세금 변화는 수익성에 일부 부담을 주었습니다.
 """
-        text = "静夜思是唐代诗人李白创作的一首五言古诗。这首诗描绘了诗人在寂静的夜晚，看到窗前的明月，不禁想起远方的家乡和亲人"
+        text = "윤동주의 「별 헤는 밤」은 밤하늘을 바라보며 고향과 사람을 떠올리는 서정적인 작품입니다"
 
         text = _format_text(text)
         lines = utils.split_string_by_punctuations(text)

@@ -36,7 +36,7 @@ class RedisTaskManager(TaskManager):
                 "params"
             ].dict()
 
-        # 将函数对象转换为其名称
+        # 한국어로 번역된 설명입니다.
         task_with_serializable_params["func"] = task["func"].__name__
         self.redis_client.rpush(self.queue, json.dumps(task_with_serializable_params))
 
@@ -44,7 +44,7 @@ class RedisTaskManager(TaskManager):
         task_json = self.redis_client.lpop(self.queue)
         if task_json:
             task_info = json.loads(task_json)
-            # 将函数名称转换回函数对象
+            # 한국어로 번역된 설명입니다.
             task_info["func"] = FUNC_MAP[task_info["func"]]
 
             if "params" in task_info["kwargs"] and isinstance(

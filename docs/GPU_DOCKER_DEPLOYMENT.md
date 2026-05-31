@@ -1,142 +1,144 @@
-# GPU Docker Deployment Guide
+# GPU Docker 배포 가이드
 
-本文档介绍如何使用 GPU 加速 `faster-whisper` 字幕生成，大幅提升处理速度。
+이 문서는 GPU로 `faster-whisper` 자막 생성을 가속해 처리 속도를 높이는 방법을 설명합니다.
 
-## 为什么要 GPU 加速
+## GPU 가속이 필요한 이유
 
-MoneyPrinterTurbo 中唯一的深度学习环节是 **faster-whisper 语音识别**（将音频转为带时间戳的字幕）。
+MoneyPrinterTurbo에서 딥러닝을 직접 사용하는 핵심 단계는 **faster-whisper 음성 인식**입니다. 이 단계는 오디오를 타임스탬프가 있는 자막으로 변환합니다.
 
-- **CPU 模式**（默认）：`large-v3` 模型生成字幕较慢
-- **GPU 模式**：利用 NVIDIA GPU + CUDA 加速，速度提升 **5-10 倍**
+- **CPU 모드**(기본값): `large-v3` 모델의 자막 생성 속도가 느릴 수 있습니다.
+- **GPU 모드**: NVIDIA GPU와 CUDA를 사용해 보통 **5-10배** 빠르게 처리할 수 있습니다.
 
-> 注意：项目的其他环节（脚本生成、音频合成、视频剪辑）不涉及深度学习，GPU 只加速字幕生成。
+> 참고: 대본 생성, 음성 합성, 영상 편집 단계는 GPU 가속 대상이 아닙니다. GPU는 Whisper 기반 자막 생성에만 사용됩니다.
 
-## 部署方式
+## 배포 방식
 
-本项目提供两种 Docker 部署方式，**默认 CPU 部署不受任何影响**：
+프로젝트는 두 가지 Docker 배포 방식을 제공합니다. **기본 CPU 배포는 그대로 사용할 수 있습니다.**
 
-### CPU 部署（默认，零变化）
+### CPU 배포(기본, 변경 없음)
 
 ```bash
 docker compose up -d
 ```
 
-使用原有的 `Dockerfile`（`python:3.11-slim-bullseye`），无需 GPU。
+기존 `Dockerfile`(`python:3.11-slim-bullseye`)을 사용하며 GPU가 필요하지 않습니다.
 
-### GPU 部署（有 NVIDIA GPU 的用户）
+### GPU 배포(NVIDIA GPU 사용자)
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
 ```
 
-使用 `Dockerfile.gpu`（`nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04`）并为 api 服务挂载 GPU。
+`Dockerfile.gpu`(`nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04`)를 사용하고 API 서비스에 GPU를 마운트합니다.
 
-## GPU 部署前提条件
+## 사전 조건
 
-### 1. 硬件要求
+### 1. 하드웨어
 
-- NVIDIA GPU（建议 6GB 以上显存）
-- `large-v3` 模型在 GPU 上 `float16` 精度约占用 1.5GB 显存
+- NVIDIA GPU(6GB 이상 VRAM 권장)
+- `large-v3` 모델은 GPU `float16` 기준 약 1.5GB VRAM을 사용합니다.
 
-### 2. 软件要求
+### 2. 소프트웨어
 
-- **NVIDIA 驱动**：最新版即可，运行 `nvidia-smi` 确认
+- **NVIDIA 드라이버**: 최신 버전을 권장하며 `nvidia-smi`로 확인합니다.
 - **Docker Desktop**
-- **NVIDIA Container Toolkit**：运行 `docker info` 查看 Runtimes 列表中是否有 `nvidia`
+- **NVIDIA Container Toolkit**: `docker info`의 Runtimes 목록에 `nvidia`가 있는지 확인합니다.
 
-### 3. 环境验证
+### 3. 환경 확인
 
 ```bash
-# 确认 NVIDIA 驱动正常
+# NVIDIA 드라이버 확인
 nvidia-smi
 
-# 确认 Docker 支持 GPU（Runtimes 中应包含 nvidia）
-docker info | findstr nvidia
+# Docker GPU 지원 확인(Runtimes에 nvidia가 있어야 함)
+docker info | grep -i runtime
 ```
 
-如果没有 `nvidia` runtime，需要先安装 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。
+`nvidia` runtime이 없다면 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)을 먼저 설치하세요.
 
-## 配置 Whisper 使用 GPU
+## Whisper GPU 설정
 
-在 `config.toml` 中设置：
+`config.toml`에서 다음처럼 설정합니다.
 
 ```toml
+[app]
 subtitle_provider = "whisper"
 
 [whisper]
 model_size = "large-v3"
-device = "cuda"           # 使用 GPU（CPU 用户设为 "cpu"）
-compute_type = "float16"  # GPU 推荐 float16（CPU 用户设为 "int8"）
+device = "cuda"           # GPU 사용, CPU 사용자는 "cpu"
+compute_type = "float16"  # GPU 권장값, CPU 사용자는 "int8"
 ```
 
-## 文件说明
+## 파일 설명
 
-| 文件 | 用途 |
-|---|---|
-| `Dockerfile` | 默认 CPU 镜像（原有，未修改） |
-| `Dockerfile.gpu` | GPU 镜像（新增，基于 NVIDIA CUDA） |
-| `docker-compose.yml` | 默认 CPU 部署配置（原有，未修改） |
-| `docker-compose.gpu.yml` | GPU 部署覆盖配置（新增） |
+| 파일 | 용도 |
+| --- | --- |
+| `Dockerfile` | 기본 CPU 이미지 |
+| `Dockerfile.gpu` | NVIDIA CUDA 기반 GPU 이미지 |
+| `docker-compose.yml` | 기본 CPU 배포 설정 |
+| `docker-compose.gpu.yml` | GPU 배포용 override 설정 |
 
-## GPU 部署步骤
+## 배포 단계
 
-### 第 1 步：拉取 CUDA 基础镜像
+### 1단계: CUDA 기반 이미지 가져오기
 
 ```bash
 docker pull nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 ```
 
-> 如果使用了阿里云等镜像加速源，可能对 `nvidia/cuda` 返回 403。请确保能从 Docker Hub 直接拉取。
+> 일부 미러 가속 환경은 `nvidia/cuda` 이미지에 403을 반환할 수 있습니다. Docker Hub에서 직접 받을 수 있는지 확인하세요.
 
-### 第 2 步：修改 config.toml
+### 2단계: `config.toml` 수정
 
-按上文说明设置 `subtitle_provider = "whisper"` 和 `device = "cuda"`。
+위 설정처럼 `subtitle_provider = "whisper"`, `device = "cuda"`를 지정합니다.
 
-### 第 3 步：构建并启动
+### 3단계: 빌드 및 실행
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
 ```
 
-### 第 4 步：验证 GPU 是否生效
+### 4단계: GPU 적용 확인
 
 ```bash
-docker exec -it moneyprinterturbo-api nvidia-smi
+docker compose exec api nvidia-smi
 ```
 
-如果能看到 GPU 信息，说明 GPU 挂载成功。
+GPU 정보가 보이면 GPU 마운트가 정상입니다.
 
-## 显存与并发建议
+## VRAM과 동시 작업 권장값
 
-| GPU 显存 | 建议最大并发任务数 |
-|---|---|
-| 4GB | 1-2 |
-| 6GB | 2-3 |
-| 8GB | 3-4 |
-| 12GB+ | 5 |
+| GPU VRAM | 권장 최대 동시 작업 수 |
+| --- | --- |
+| 4GB | 1 |
+| 6GB | 1-2 |
+| 8GB | 2 |
+| 12GB 이상 | 3 이상 |
 
-可通过 `config.toml` 中的 `max_concurrent_tasks` 控制并发数。
+동시 작업 수는 `config.toml`의 `max_concurrent_tasks`로 조절할 수 있습니다.
 
-## 故障排查
+## 문제 해결
 
-### 问题 1：镜像拉取失败（403 Forbidden）
+### 문제 1: 이미지 pull 실패(403 Forbidden)
 
-阿里云镜像加速对 `nvidia/cuda` 返回 403。解决方法：
-- 配置其他可用的镜像加速源
-- 或直接 `docker pull nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04`
+일부 이미지 미러가 `nvidia/cuda`에 403을 반환할 수 있습니다.
 
-### 问题 2：pip 安装报 `Cannot uninstall blinker`
+- 다른 미러를 설정합니다.
+- 또는 `docker pull nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04`로 직접 받습니다.
 
-Ubuntu 22.04 系统自带的 `blinker` 通过 `distutils` 安装，pip 无法卸载。`Dockerfile.gpu` 已通过 `apt-get remove -y python3-blinker` 处理。
+### 문제 2: pip 설치 중 `Cannot uninstall blinker` 오류
 
-### 问题 3：容器内 `nvidia-smi` 找不到 GPU
+Ubuntu 22.04 기본 `blinker`가 `distutils`로 설치되어 pip가 제거하지 못하는 경우입니다. `Dockerfile.gpu`는 `apt-get remove -y python3-blinker`로 이 문제를 처리합니다.
 
-- 确认宿主机已安装 NVIDIA Container Toolkit
-- 确认 `docker info` 中 Runtimes 包含 `nvidia`
-- 确认使用了 GPU 部署命令：`docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d`
+### 문제 3: 컨테이너에서 `nvidia-smi`가 GPU를 찾지 못함
 
-### 问题 4：Whisper 报 CUDA 错误
+- 호스트에 NVIDIA Container Toolkit이 설치되어 있는지 확인합니다.
+- `docker info`의 Runtimes에 `nvidia`가 있는지 확인합니다.
+- GPU 배포 명령을 사용했는지 확인합니다: `docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d`
 
-- 确认 `config.toml` 中 `device = "cuda"`（大小写敏感，不是 `"CPU"`）
-- 确认 `compute_type = "float16"`
-- 确认 `subtitle_provider = "whisper"`
+### 문제 4: Whisper CUDA 오류
+
+- `config.toml`의 `device = "cuda"`를 확인합니다. 대소문자를 구분하며 `"CPU"`가 아닙니다.
+- `compute_type = "float16"`인지 확인합니다.
+- `subtitle_provider = "whisper"`인지 확인합니다.

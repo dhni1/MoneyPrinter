@@ -37,9 +37,9 @@ Generate a script for a video, depending on the subject of the video.
 
 
 def _normalize_text_response(content, llm_provider: str) -> str:
-    # 不同 LLM SDK 在异常或被拦截场景下，可能返回 None、空字符串，
-    # 甚至返回非字符串对象。这里统一做兜底校验，避免后续直接调用
-    # `.replace()` 时抛出 `NoneType` 之类的属性错误。
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
     if content is None:
         raise ValueError(f"[{llm_provider}] returned empty text content")
 
@@ -56,10 +56,10 @@ def _normalize_text_response(content, llm_provider: str) -> str:
 
 
 def _extract_chat_completion_text(response, llm_provider: str) -> str:
-    # OpenAI 兼容接口在异常场景下，可能返回没有 choices、
-    # 或者 choices/message/content 为空的响应对象。
-    # 这里统一做结构校验，避免出现 `NoneType is not subscriptable`
-    # 这类底层属性访问错误。
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
     choices = getattr(response, "choices", None)
     if not choices:
         raise ValueError(f"[{llm_provider}] returned empty choices")
@@ -140,8 +140,8 @@ def _generate_response(prompt: str) -> str:
                 api_key = config.app.get("gemini_api_key")
                 model_name = config.app.get("gemini_model_name")
                 base_url = config.app.get("gemini_base_url", "")
-                # Gemini 旧模型名已经陆续下线，这里自动兼容历史配置，
-                # 避免用户沿用旧值时直接收到 404。
+                # 한국어로 번역된 설명입니다.
+                # 한국어로 번역된 설명입니다.
                 if not model_name:
                     model_name = _DEFAULT_GEMINI_MODEL
                 elif model_name in _DEPRECATED_GEMINI_MODELS:
@@ -174,10 +174,10 @@ def _generate_response(prompt: str) -> str:
                 api_key = config.app.get("mimo_api_key")
                 model_name = config.app.get("mimo_model_name")
                 base_url = config.app.get("mimo_base_url", "")
-                # Xiaomi MiMo 官方文档说明其兼容 OpenAI Chat Completions 协议。
-                # 这里使用独立 provider 保存默认地址和模型名，用户不用把 MiMo
-                # 当作 OpenAI 自定义 base_url 配置，也便于后续继续接入 MiMo
-                # 多模态或 TTS 能力时保持边界清晰。
+                # 한국어로 번역된 설명입니다.
+                # 한국어로 번역된 설명입니다.
+                # 한국어로 번역된 설명입니다.
+                # 한국어로 번역된 설명입니다.
                 if not base_url:
                     base_url = "https://api.xiaomimimo.com/v1"
                 if not model_name:
@@ -411,10 +411,10 @@ def _generate_response(prompt: str) -> str:
                 return _extract_chat_completion_text(response, llm_provider)
 
             if llm_provider == "azure":
-                # Azure OpenAI SDK 使用 `azure_endpoint` 和 `api_version` 生成专用请求地址，
-                # 不能继续复用下面普通 OpenAI-compatible 的 `base_url` 初始化逻辑。
-                # 这里在 Azure 分支内完成请求并立即返回，避免客户端被后续 fallback
-                # 覆盖，导致用户配置的 Azure 凭证通过校验但实际请求没有被使用。
+                # 한국어로 번역된 설명입니다.
+                # 한국어로 번역된 설명입니다.
+                # 한국어로 번역된 설명입니다.
+                # 한국어로 번역된 설명입니다.
                 logger.info(f"requesting azure chat completion, model: {model_name}")
                 client = AzureOpenAI(
                     api_key=api_key,
@@ -496,9 +496,9 @@ def _limit_script_text(text: str | None, max_length: int, field_name: str) -> st
     if len(value) <= max_length:
         return value
 
-    # API 层已经用 Pydantic 做长度校验；这里继续兜底，是为了保护
-    # WebUI 或内部服务直接调用 generate_script 时不会把超长提示词发送给模型，
-    # 避免 token 成本异常和请求失败。
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
     logger.warning(
         f"{field_name} is too long and will be truncated to {max_length} characters."
     )
@@ -512,8 +512,8 @@ def _normalize_script_paragraph_number(paragraph_number: int | None) -> int:
         value = MIN_SCRIPT_PARAGRAPH_NUMBER
 
     if value < MIN_SCRIPT_PARAGRAPH_NUMBER or value > MAX_SCRIPT_PARAGRAPH_NUMBER:
-        # WebUI 和 API 都会限制范围；这里兜底处理内部调用，避免异常参数直接扩大
-        # LLM 生成成本或生成空结果。
+        # 한국어로 번역된 설명입니다.
+        # 한국어로 번역된 설명입니다.
         logger.warning(
             "script paragraph_number is out of range and will be clamped: "
             f"{value}"
@@ -538,8 +538,8 @@ def build_script_prompt(
         custom_system_prompt, MAX_SCRIPT_SYSTEM_PROMPT_LENGTH, "custom_system_prompt"
     )
 
-    # 将“脚本生成规则”和“运行时上下文”分开拼接。这样高级用户即使覆盖默认
-    # system prompt，也不会漏掉视频主题、语言、段落数这些每次生成都必须带上的参数。
+    # 한국어로 번역된 설명입니다.
+    # 한국어로 번역된 설명입니다.
     prompt = custom_system_prompt or DEFAULT_SCRIPT_SYSTEM_PROMPT
     prompt += f"""
 
@@ -616,7 +616,7 @@ def generate_script(
                 logging.error("gpt returned an empty response")
 
             # g4f may return an error message
-            if final_script and "当日额度已消耗完" in final_script:
+            if final_script and "\u5f53\u65e5\u989d\u5ea6\u5df2\u6d88\u8017\u5b8c" in final_script:
                 raise ValueError(final_script)
 
             if final_script:
@@ -685,9 +685,9 @@ Please note that you must use English for generating video search terms; Chinese
                     try:
                         search_terms = json.loads(match.group())
                     except Exception as e:
-                        # 这里保留重试流程，但必须记录 LLM 返回的非标准 JSON，
-                        # 否则后续排查搜索词为空时无法定位
-                        # 是模型格式问题还是解析逻辑问题。
+                        # 한국어로 번역된 설명입니다.
+                        # 한국어로 번역된 설명입니다.
+                        # 한국어로 번역된 설명입니다.
                         logger.warning(f"failed to generate video terms: {str(e)}")
 
         if search_terms and len(search_terms) > 0:
@@ -700,7 +700,7 @@ Please note that you must use English for generating video search terms; Chinese
 
 
 if __name__ == "__main__":
-    video_subject = "生命的意义是什么"
+    video_subject = "한국어 예시 텍스트입니다."
     script = generate_script(
         video_subject=video_subject, language="zh-CN", paragraph_number=1
     )

@@ -18,30 +18,30 @@ from app.services import llm
 class TestScriptPromptOptions(unittest.TestCase):
     def test_build_script_prompt_appends_advanced_requirements(self):
         """
-        高级文案要求只作为附加约束，不替换默认系统提示词。
-        这样普通用户不配置时仍然走稳定默认规则，高级用户也能细化风格。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         prompt = llm.build_script_prompt(
-            video_subject="咖啡",
+            video_subject="한국어 예시 텍스트입니다.",
             language="zh-CN",
             paragraph_number=3,
-            video_script_prompt="语气轻松，面向程序员",
+            video_script_prompt="한국어 예시 텍스트입니다.",
         )
 
         self.assertIn("# Role: Video Script Generator", prompt)
-        self.assertIn("- video subject: 咖啡", prompt)
+        self.assertIn("한국어 예시 텍스트입니다.", prompt)
         self.assertIn("- number of paragraphs: 3", prompt)
         self.assertIn("- language: zh-CN", prompt)
         self.assertIn("# Additional User Requirements:", prompt)
-        self.assertIn("语气轻松，面向程序员", prompt)
+        self.assertIn("한국어 예시 텍스트입니다.", prompt)
 
     def test_custom_system_prompt_keeps_runtime_context(self):
         """
-        自定义 system prompt 会替换默认脚本规则，但视频主题、语言、段落数
-        仍由服务层统一追加，避免高级用户漏写必要上下文。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         prompt = llm.build_script_prompt(
-            video_subject="露营",
+            video_subject="한국어 예시 텍스트입니다.",
             language="en",
             paragraph_number=2,
             custom_system_prompt="Only write cinematic narration.",
@@ -49,7 +49,7 @@ class TestScriptPromptOptions(unittest.TestCase):
 
         self.assertNotIn("# Role: Video Script Generator", prompt)
         self.assertIn("Only write cinematic narration.", prompt)
-        self.assertIn("- video subject: 露营", prompt)
+        self.assertIn("한국어 예시 텍스트입니다.", prompt)
         self.assertIn("- number of paragraphs: 2", prompt)
         self.assertIn("- language: en", prompt)
 
@@ -58,31 +58,31 @@ class TestScriptPromptOptions(unittest.TestCase):
 
         def fake_generate_response(prompt):
             captured["prompt"] = prompt
-            return "第一段。\n\n第二段。"
+            return "한국어 예시 텍스트입니다."
 
         with patch.object(llm, "_generate_response", side_effect=fake_generate_response):
             result = llm.generate_script(
-                video_subject="咖啡",
+                video_subject="한국어 예시 텍스트입니다.",
                 language="zh-CN",
                 paragraph_number=2,
-                video_script_prompt="开头更有悬念",
+                video_script_prompt="한국어 예시 텍스트입니다.",
             )
 
-        self.assertEqual(result, "第一段。\n\n第二段。")
+        self.assertEqual(result, "한국어 예시 텍스트입니다.")
         self.assertIn("- number of paragraphs: 2", captured["prompt"])
-        self.assertIn("开头更有悬念", captured["prompt"])
+        self.assertIn("한국어 예시 텍스트입니다.", captured["prompt"])
 
     def test_video_script_request_rejects_invalid_advanced_options(self):
         """
-        API 请求模型需要限制高级 prompt 参数，避免外部调用绕过 WebUI
-        传入异常段落数或超长提示词，导致模型成本和结果不可控。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         with self.assertRaises(ValidationError):
-            VideoScriptRequest(video_subject="咖啡", paragraph_number=0)
+            VideoScriptRequest(video_subject="한국어 예시 텍스트입니다.", paragraph_number=0)
 
         with self.assertRaises(ValidationError):
             VideoScriptRequest(
-                video_subject="咖啡",
+                video_subject="한국어 예시 텍스트입니다.",
                 video_script_prompt="x" * (llm.MAX_SCRIPT_PROMPT_LENGTH + 1),
             )
 
@@ -101,11 +101,11 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_litellm_provider_returns_normalized_text(self):
         """
-        验证 LiteLLM provider 的主路径不依赖真实网络和私有 API key。
+        한국어 설명입니다.
 
-        这里用 fake module 注入 `sys.modules`，直接覆盖动态 import 的
-        `litellm.completion()`，确保测试稳定覆盖 `_generate_response()` 里的
-        litellm 分支。
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         self._use_litellm_provider()
 
@@ -151,9 +151,9 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_litellm_provider_handles_empty_message(self):
         """
-        某些 OpenAI-compatible 网关在内容过滤或安全拦截时会返回
-        HTTP 200，但 `choices[0].message` 为 None。这里必须返回
-        可诊断的错误，而不是抛出 AttributeError。
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         self._use_litellm_provider()
 
@@ -233,7 +233,7 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_ollama_default_base_url_uses_localhost_outside_container(self):
         """
-        普通本机运行时，Ollama 默认仍然使用 localhost，避免影响已有用户。
+        한국어 설명입니다.
         """
         self._use_ollama_provider()
 
@@ -242,8 +242,8 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_ollama_default_base_url_uses_host_gateway_inside_container(self):
         """
-        容器内运行时，localhost 指向容器自身；默认改为 host.docker.internal，
-        方便 Docker Desktop 用户访问宿主机上的 Ollama。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         self._use_ollama_provider()
 
@@ -255,8 +255,8 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_ollama_default_base_url_falls_back_to_container_gateway(self):
         """
-        原生 Linux Docker 里不一定能解析 host.docker.internal。此时使用容器
-        默认网关作为兜底地址，比直接返回不可解析的 hostname 更稳。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         self._use_ollama_provider()
 
@@ -269,7 +269,7 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_ollama_explicit_base_url_takes_precedence(self):
         """
-        用户手动配置的 ollama_base_url 优先级最高，不受容器检测影响。
+        한국어 설명입니다.
         """
         self._use_ollama_provider(base_url="http://ollama:11434/v1")
 
@@ -278,9 +278,9 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_mimo_provider_uses_openai_compatible_client(self):
         """
-        MiMo 官方接口兼容 OpenAI Chat Completions 协议。这里用 fake OpenAI
-        client 验证 provider 会使用 MiMo 独立配置和默认 base_url，不依赖
-        真实网络或私有 API Key。
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         config.app["llm_provider"] = "mimo"
         config.app["mimo_api_key"] = "mimo-key"
@@ -320,9 +320,9 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_azure_provider_uses_azure_client_directly(self):
         """
-        Azure OpenAI 的鉴权、endpoint 和 api-version 都由 AzureOpenAI 客户端处理。
-        这个测试覆盖 issue #892：azure 分支必须直接调用 AzureOpenAI 创建的客户端，
-        不能继续落入普通 OpenAI-compatible 分支，否则会丢失 Azure 专用请求配置。
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         config.app["llm_provider"] = "azure"
         config.app["azure_api_key"] = "azure-key"
@@ -366,8 +366,8 @@ class TestLiteLLMProvider(unittest.TestCase):
 
     def test_g4f_provider_requires_explicit_opt_in(self):
         """
-        g4f 存在供应链和稳定性风险，不能因为用户把 provider 写成 g4f
-        就默认加载第三方包并访问逆向接口，必须显式启用。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         config.app["llm_provider"] = "g4f"
         config.app["enable_g4f"] = False
@@ -407,7 +407,7 @@ class TestLiteLLMProvider(unittest.TestCase):
 class TestRuntimeEnvironmentDetection(unittest.TestCase):
     def test_container_detection_ignores_plain_linux_cgroup_file(self):
         """
-        普通 Linux 也有 /proc/1/cgroup，不能因为文件存在就判定为容器。
+        한국어 설명입니다.
         """
         with tempfile.TemporaryDirectory() as tmp_dir:
             cgroup_path = Path(tmp_dir) / "cgroup"

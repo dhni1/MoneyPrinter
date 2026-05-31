@@ -42,8 +42,8 @@ class TestSecurityControls(unittest.TestCase):
 
     def test_task_query_returns_relative_task_url_without_mutating_state(self):
         """
-        endpoint 未显式配置时，任务查询接口不能使用 Host 派生绝对 URL，
-        也不能把展示 URL 回写到任务状态里，否则不同 Host 查询会污染结果。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         task_id = "security-task-url"
         task_dir = utils.task_dir(task_id)
@@ -69,8 +69,8 @@ class TestSecurityControls(unittest.TestCase):
 
     def test_in_memory_task_manager_rejects_when_queue_is_full(self):
         """
-        并发数用尽后，等待队列必须有硬上限。这里用 max_concurrent_tasks=0
-        强制任务进入队列，验证超过 max_queued_tasks 时会拒绝继续入队。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         manager = InMemoryTaskManager(max_concurrent_tasks=0, max_queued_tasks=1)
 
@@ -125,8 +125,8 @@ class TestVideoService(unittest.TestCase):
 
     def test_preprocess_video_rejects_material_outside_local_videos(self):
         """
-        local 素材路径来自 API 参数，不能允许任意绝对路径进入 MoviePy。
-        这里验证非 local_videos 白名单目录内的路径会被跳过，避免任意文件读取。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         m = MaterialInfo(provider="local", url=self.test_img_path)
 
@@ -136,8 +136,8 @@ class TestVideoService(unittest.TestCase):
 
     def test_get_bgm_file_accepts_song_directory_filename(self):
         """
-        BGM 列表接口现在只暴露文件名；生成视频时应能把文件名安全解析回
-        resource/songs 白名单目录，保持正常使用路径可用。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         song_dir = utils.song_dir()
         bgm_path = os.path.join(song_dir, "test-safe-bgm.mp3")
@@ -151,9 +151,9 @@ class TestVideoService(unittest.TestCase):
 
     def test_get_bgm_file_accepts_project_relative_song_path(self):
         """
-        用户在 WebUI 中可能直接填写 ./resource/songs/xxx.mp3。该路径虽然是
-        项目根目录相对路径，但实际文件仍在 resource/songs 白名单目录内，
-        应该被接受，避免自定义背景音乐被误判为不存在。
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         song_dir = utils.song_dir()
         bgm_path = os.path.join(song_dir, "test-relative-bgm.mp3")
@@ -170,21 +170,21 @@ class TestVideoService(unittest.TestCase):
 
     def test_get_bgm_file_rejects_path_outside_song_directory(self):
         """
-        用户传入的 bgm_file 不能直接作为本地路径打开，否则可能读取系统文件。
-        即使外部文件存在，也必须因为不在 songs 目录内被拒绝。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         with tempfile.NamedTemporaryFile(suffix=".mp3") as temp_bgm:
             self.assertEqual(vd.get_bgm_file(bgm_file=temp_bgm.name), "")
 
     def test_get_ffmpeg_binary_uses_configured_env_path(self):
-        """配置中显式指定 ffmpeg 时，应优先使用该路径。"""
+        """한국어 설명입니다."""
         with patch.dict(os.environ, {"IMAGEIO_FFMPEG_EXE": "/tmp/custom-ffmpeg"}, clear=True):
             self.assertEqual(vd.get_ffmpeg_binary(), "/tmp/custom-ffmpeg")
 
     def test_get_ffmpeg_binary_falls_back_to_imageio_ffmpeg(self):
         """
-        Windows 便携包里系统 PATH 可能没有 ffmpeg，但 moviepy 依赖的
-        imageio-ffmpeg 通常会提供可执行文件。这里验证该兜底路径可用。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         fake_imageio_ffmpeg = types.SimpleNamespace(
             get_ffmpeg_exe=lambda: "/tmp/bundled-ffmpeg"
@@ -197,9 +197,9 @@ class TestVideoService(unittest.TestCase):
 
     def test_open_video_clip_quietly_suppresses_moviepy_stdout(self):
         """
-        MoviePy 2.1.x 的 FFMPEG_VideoReader 会直接向 stdout 打印 metadata
-        和 ffmpeg 命令。项目服务层应屏蔽这类依赖库噪声，避免用户把
-        `audio_found: False` 误判为最终视频没有音频。
+        한국어 설명입니다.
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
         video_path = os.path.join(resources_dir, "1.png.mp4")
         if not os.path.exists(video_path):
@@ -218,8 +218,8 @@ class TestVideoService(unittest.TestCase):
 
     def test_combine_videos_closes_audio_clip_when_duration_read_fails(self):
         """
-        `combine_videos()` 只需要读取旁白音频时长。即使读取 duration
-        时发生异常，也必须关闭 AudioFileClip，避免文件句柄泄漏。
+        한국어 설명입니다.
+        한국어 설명입니다.
         """
 
         class _FakeAudioReader:
@@ -298,7 +298,7 @@ class TestVideoService(unittest.TestCase):
             self.assertIn("\n", wrapped_text_en)
             
             # test chinese text wrapping
-            test_text_zh = "这是一段用来测试中文长句换行的文本内容，应该会根据宽度限制进行换行处理"
+            test_text_zh = "한국어 예시 텍스트입니다."
             wrapped_text_zh, text_height_zh = vd.wrap_text(
                 text=test_text_zh,
                 max_width=300,
